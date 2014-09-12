@@ -5,17 +5,11 @@ type Bot interface {
 	FullName() string
 	Send(msg string)
 	Connect() error
-	Listen() chan<- Message
+	Listen() chan Message
 }
 
 //*************************************************
 type Message interface {
 	Body() string
 	From() string
-}
-
-//*************************************************
-type Plugin interface {
-	Name() string
-	Execute(msg Message, bot Bot) error
 }

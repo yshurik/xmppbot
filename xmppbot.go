@@ -6,57 +6,57 @@ import (
 	"os"
 )
 
-type XMPPBotOptions struct {
+type Options struct {
 	xmpp.Options
 	Room string
 }
 
 //*************************************************
-type XMPPBotMessage struct {
+type message struct {
 	body, from string
 }
 
-func (m XMPPBotMessage) Body() string {
+func (m message) Body() string {
 	return m.body
 }
-func (m XMPPBotMessage) From() string {
+func (m message) From() string {
 	return m.from
 }
 
 //*************************************************
-type XMPPBot struct {
-	Options XMPPBotOptions
-	client  *xmpp.Client
-	logger  *log.Logger
+type bot struct {
+	Opt    Options
+	client *xmpp.Client
+	logger *log.Logger
 }
 
-func (b *XMPPBot) FullName() string {
-	return b.Options.Room + "/" + b.Options.Resource
+func (b *bot) FullName() string {
+	return b.Opt.Room + "/" + b.Opt.Resource
 }
 
-func (b *XMPPBot) Name() string {
-	return b.Options.Resource
+func (b *bot) Name() string {
+	return b.Opt.Resource
 }
 
-func (b *XMPPBot) Send(msg string) {
-	b.client.Send(xmpp.Chat{Remote: b.Options.Room, Type: "groupchat", Text: msg})
+func (b *bot) Send(msg string) {
+	b.client.Send(xmpp.Chat{Remote: b.Opt.Room, Type: "groupchat", Text: msg})
 }
-func (b *XMPPBot) Connect() error {
+func (b *bot) Connect() error {
 	var err error
-	b.logger.Printf("Connecting to %s:*******@%s \n", b.Options.User, b.Options.Host)
-	b.client, err = b.Options.NewClient()
+	b.logger.Printf("Connecting to %s:*******@%s \n", b.Opt.User, b.Opt.Host)
+	b.client, err = b.Opt.NewClient()
 	if err != nil {
 		b.logger.Printf("Error: %s \n", err)
 		return err
 	}
-	b.logger.Printf("Joining %s with resource %s \n", b.Options.Room, b.Options.Resource)
-	b.client.JoinMUC(b.Options.Room + "/" + b.Options.Resource)
+	b.logger.Printf("Joining %s with resource %s \n", b.Opt.Room, b.Opt.Resource)
+	b.client.JoinMUC(b.Opt.Room + "/" + b.Opt.Resource)
 	return nil
 }
-func (b *XMPPBot) Listen() chan<- Message {
-	msgChan := make(chan<- Message)
+func (b *bot) Listen() chan Message {
+	msgChan := make(chan Message)
 
-	go func(recv chan<- Message) {
+	go func(recv chan Message) {
 		for {
 			chat, err := b.client.Recv()
 			if err != nil {
@@ -64,7 +64,7 @@ func (b *XMPPBot) Listen() chan<- Message {
 			}
 			switch v := chat.(type) {
 			case xmpp.Chat:
-				recv <- XMPPBotMessage{body: v.Text, from: v.Remote}
+				recv <- message{body: v.Text, from: v.Remote}
 			case xmpp.Presence:
 				b.logger.Printf("Presence: %+v \n", v)
 			}
@@ -73,13 +73,13 @@ func (b *XMPPBot) Listen() chan<- Message {
 
 	return msgChan
 }
-func (b *XMPPBot) SetLogger(logger *log.Logger) {
+func (b *bot) SetLogger(logger *log.Logger) {
 	b.logger = logger
 }
 
 //*************************************************
-func NewXMPPBot(host, user, password, room, name string) *XMPPBot {
-	opt := XMPPBotOptions{
+func New(host, user, password, room, name string) *bot {
+	opt := Options{
 		xmpp.Options{
 			Host:     host,
 			User:     user,
@@ -91,7 +91,7 @@ func NewXMPPBot(host, user, password, room, name string) *XMPPBot {
 		},
 		room,
 	}
-	bot := &XMPPBot{Options: opt}
+	bot := &bot{Opt: opt}
 	bot.SetLogger(log.New(os.Stderr, "", log.LstdFlags))
 	return bot
 }
