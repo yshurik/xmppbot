@@ -78,7 +78,7 @@ func (b *bot) SetLogger(logger *log.Logger) {
 }
 
 //*************************************************
-func New(host, user, password, room, name string) *bot {
+func New(host, user, password, room, name string) Bot {
 	opt := Options{
 		xmpp.Options{
 			Host:     host,
