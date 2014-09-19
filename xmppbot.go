@@ -19,6 +19,7 @@ type message struct {
 func (m message) Body() string {
 	return m.body
 }
+
 func (m message) From() string {
 	return m.from
 }
@@ -41,6 +42,7 @@ func (b *bot) Name() string {
 func (b *bot) Send(msg string) {
 	b.client.Send(xmpp.Chat{Remote: b.Opt.Room, Type: "groupchat", Text: msg})
 }
+
 func (b *bot) Connect() error {
 	var err error
 	b.logger.Printf("Connecting to %s:*******@%s \n", b.Opt.User, b.Opt.Host)
@@ -53,6 +55,7 @@ func (b *bot) Connect() error {
 	b.client.JoinMUC(b.Opt.Room + "/" + b.Opt.Resource)
 	return nil
 }
+
 func (b *bot) Listen() chan Message {
 	msgChan := make(chan Message)
 
@@ -73,11 +76,17 @@ func (b *bot) Listen() chan Message {
 
 	return msgChan
 }
+
 func (b *bot) SetLogger(logger *log.Logger) {
 	b.logger = logger
 }
 
+func (b *bot) Log(msg string) {
+	b.logger.Printf("%s \n", msg)
+}
+
 //*************************************************
+
 func New(host, user, password, room, name string) Bot {
 	opt := Options{
 		xmpp.Options{

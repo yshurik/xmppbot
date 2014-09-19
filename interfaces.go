@@ -11,6 +11,7 @@ type Bot interface {
 	Connect() error
 	Listen() chan Message
 	SetLogger(*log.Logger)
+	Log(msg string)
 }
 
 //*************************************************
