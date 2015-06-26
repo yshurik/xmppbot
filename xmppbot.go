@@ -4,6 +4,7 @@ import (
 	"github.com/mattn/go-xmpp"
 	"log"
 	"os"
+	"time"
 )
 
 type Options struct {
@@ -52,8 +53,16 @@ func (b *bot) Connect() error {
 		return err
 	}
 	b.logger.Printf("Joining %s with resource %s \n", b.Opt.Room, b.Opt.Resource)
-	b.client.JoinMUC(b.Opt.Room+"/"+b.Opt.Resource, b.Opt.Resource)
+	b.client.JoinMUC(b.Opt.Room, b.Opt.Resource)
 	return nil
+}
+
+func (b *bot) PingServer(seconds time.Duration) {
+	if seconds > 0 {
+		for _ = range time.Tick(seconds * time.Second) {
+			b.client.PingC2S(b.Opt.Host+"/"+b.Opt.Resource, b.Opt.Host)
+		}
+	}
 }
 
 func (b *bot) Listen() chan Message {
@@ -95,7 +104,7 @@ func New(host, user, password, room, name string) Bot {
 			Password: password,
 			Resource: name,
 			NoTLS:    true,
-			Debug:    false,
+			Debug:    true,
 			Session:  true,
 		},
 		room,
